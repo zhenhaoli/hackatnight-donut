@@ -8,7 +8,7 @@ The context for your new service will come from your BMW: user profile of the dr
 
 ## BMW Car API
 
-[API Documentation (Wiki)](https://github.com/bmw-hackathons/hackatnight/wiki/BMW-Car-API)
+[API Documentation (Wiki)](https://github.com/bmw-hackathons/hackatnight/wiki/1.1-BMW-Car-API:-Overview)
 
 ## FAQs
 
