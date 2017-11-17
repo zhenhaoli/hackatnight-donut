@@ -1,0 +1,8 @@
+<h1 md-dialog-title>{{title}}</h1>
+<md-dialog-content>
+    {{content}}
+</md-dialog-content>
+<md-dialog-actions>
+    <button md-raised-button class="margin--sm" (click)="close()">{{closeLabel}}</button>
+    <button md-raised-button *ngIf="confirmLabel" class="margin--sm" color="warn" (click)="confirm()">{{confirmLabel}}</button>
+</md-dialog-actions>

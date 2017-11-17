@@ -1,0 +1,20 @@
+<button *ngIf="!isRecording" md-button (click)="startRecording()">
+    Start recording
+</button>
+
+<button *ngIf="isRecording" md-button (click)="stopRecording()">
+    Stop recording
+</button>
+
+<button md-button>
+    Take picture
+</button>
+
+<md-input-container floatPlaceholder="auto">
+    <textarea mdInput [(ngModel)]="textInput" type="text" required
+              placeholder=""></textarea>
+</md-input-container>
+
+<button md-button (click)="sendText()">
+    Send text
+</button>
