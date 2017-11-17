@@ -30,10 +30,14 @@
             <button md-mini-fab [color]="isRecording ? 'warn':'primary'" (click)="startRecording()">
                 <md-icon>mic</md-icon>
             </button>
+            <button md-mini-fab color="accent" *ngIf="videoStream" (click)="takePicture()">
+                <md-icon>photo_camera</md-icon>
+            </button>
         </div>
     </div>
 </div>
 
 
-
-
+<!-- VIDEO RECORDER -->
+<video style="display:none" width="300" height="300"></video>
+<canvas style="display:none;" width="300" height="300"></canvas>
