@@ -1,0 +1,43 @@
+@import "../../../lib/styles/main";
+
+:host {
+    height: 100%;
+    overflow: auto;
+}
+$bottom-bar: 80px;
+
+.home__full-width-height-section {
+    width: 100%;
+    height: calc(100vh - #{$top-nav-height} - #{$bottom-bar});
+    overflow: auto;
+
+    &.home__bg-image-section {
+        background: no-repeat center center fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+
+    }
+}
+
+.home__bottom-bar {
+    background-color: $light-gray-bg;
+    height: $bottom-bar;
+}
+
+$max-msg-size: 300px;
+.home__message-box {
+    padding: $unit-xs;
+    max-width: $max-msg-size;
+
+    .home__message-box__text {
+        font-size: 0.8rem;
+        margin: 0 0 0.2rem 0;
+        color: #777;
+    }
+    .home__message-box__date {
+        font-size: 0.7rem;
+        color: #ccc;
+    }
+}

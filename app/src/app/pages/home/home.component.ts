@@ -1,5 +1,7 @@
-import {Component, OnInit} from '@angular/core';
-import { Config as AWSConfig, CognitoIdentityCredentials }
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {
+    Config as AWSConfig, CognitoIdentityCredentials
+}
     from 'aws-sdk/global';
 import * as LexRuntime from 'aws-sdk/clients/lexruntime';
 import * as S3 from 'aws-sdk/clients/s3';
@@ -9,29 +11,58 @@ import {LexClient} from "../../shared/LexClient";
 declare const navigator: any;
 declare const MediaRecorder: any;
 
+export class Message {
+
+    constructor(text: string, sender: string, time: Date, audio?: HTMLAudioElement) {
+        this.text = text;
+        this.sender = sender;
+        this.time = time;
+        this.audio = audio;
+    }
+
+    text: string;
+    sender: string;
+    time: Date;
+    audio?: HTMLAudioElement;
+}
 
 @Component({
     selector: 'home',
     templateUrl: './home.component.html',
-    styleUrls: []
+    styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-    public isRecording: boolean = false;
+    // input
     public textInput: string = "";
-
-    private chunks: any = [];
+    public isRecording: boolean = false;
     private mediaRecorder: any;
+    private chunks: any = [];
+
+    // aws lex
     private lexClient: LexClient;
 
-    constructor() {
+    // message history
+    public messages: Message[] = [];
+
+    constructor(private cdf: ChangeDetectorRef) {
         // AWS SETUP
+        this.setupAwsLex();
+
+        // AUDIO RECORDER SETUP
+        this.setupAudioRecorder();
+    }
+
+    ngOnInit() {
+    }
+
+    private setupAwsLex() {
         const poolId = 'us-east-1:d1c2cef8-114c-4a99-b569-e7d63dbb9955';
         const region = 'us-east-1';
         const credentials = new CognitoIdentityCredentials(
-            { IdentityPoolId: poolId },
-            { region },
+            {IdentityPoolId: poolId},
+            {region},
         );
-        const awsConfig = new AWSConfig({ region, credentials });
+        const awsConfig = new AWSConfig({region, credentials});
         const lexRuntimeClient = new LexRuntime(awsConfig);
         const pollyClient = new Polly(awsConfig);
 
@@ -41,9 +72,10 @@ export class HomeComponent implements OnInit {
             userId: null,
             lexRuntimeClient: lexRuntimeClient
         });
+    }
 
-        // AUDIO RECORDER SETUP
-        const onSuccess = stream => {
+    private setupAudioRecorder() {
+        const onSuccess = (stream) => {
             this.mediaRecorder = new MediaRecorder(stream);
             this.mediaRecorder.onstop = (e) => {
                 const audio = new Audio();
@@ -51,15 +83,18 @@ export class HomeComponent implements OnInit {
                 this.chunks.length = 0;
                 audio.src = window.URL.createObjectURL(blob);
                 audio.load();
+                this.messages.push(new Message('', 'client', new Date(), audio));
+                this.cdf.detectChanges();
                 this.lexClient.postContent(blob).then((res) => {
-                    console.log(res);
-                    let uInt8Array = new Uint8Array(res.audioStream);
-                    let arrayBuffer = uInt8Array.buffer;
-                    let blob = new Blob([arrayBuffer]);
-                    let url = URL.createObjectURL(blob);
+                    const uInt8Array = new Uint8Array(res.audioStream);
+                    const arrayBuffer = uInt8Array.buffer;
+                    const blob = new Blob([arrayBuffer]);
+                    const url = URL.createObjectURL(blob);
                     let audioElement = new Audio();
                     audioElement.src = url;
                     audioElement.play();
+                    this.messages.push(new Message(res.message, 'server', new Date(), audioElement));
+                    this.cdf.detectChanges();
                 });
             };
 
@@ -74,19 +109,19 @@ export class HomeComponent implements OnInit {
         navigator.getUserMedia({audio: true}, onSuccess, (e) => console.log(e));
     }
 
-    ngOnInit() {
-    }
-
     public startRecording() {
-        this.isRecording = true;
-        this.mediaRecorder.start();
+        if (this.isRecording) {
+            this.stopRecording();
+        } else {
+            this.isRecording = true;
+            this.mediaRecorder.start();
+        }
     }
 
     public stopRecording() {
         // stop
         this.isRecording = false;
         this.mediaRecorder.stop();
-
     }
 
     public takePicture() {
@@ -94,9 +129,11 @@ export class HomeComponent implements OnInit {
     }
 
     public sendText() {
+        this.messages.push(new Message(this.textInput, 'client', new Date()));
         this.lexClient.postText(this.textInput).then((res) => {
-            console.log(res);
+            this.messages.push(new Message(res.message, 'server', new Date()));
         });
+        this.textInput = '';
     }
 
 }

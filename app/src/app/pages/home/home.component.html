@@ -1,20 +1,39 @@
-<button *ngIf="!isRecording" md-button (click)="startRecording()">
-    Start recording
-</button>
+<div class="home__full-width-height-section home__bg-image-section"
+     style="background-image: url('assets/images/cockpit.jpg');"
+     fxLayout="column">
+    <div class="full-height" fxLayout="column" fxLayoutAlign="end start">
+        <div *ngFor="let message of messages"
+             class="home__message-box card margin--xs"
+             [fxFlexAlign]="message.sender == 'server' ? 'start' : 'end'">
+            <p class="home__message-box__text">
+                {{message.text}} <br>
+            </p>
+            <p class="home__message-box__date">
+                <a *ngIf="message.audio" class="cursor-pointer" (click)="message.audio.play()">
+                    <md-icon>mic</md-icon>
+                </a>
+                {{message.time | date:'shortTime'}}
+            </p>
+        </div>
+    </div>
+</div>
+<div class="home__bottom-bar">
+    <div fxLayout="row">
+        <md-input-container floatPlaceholder="auto" fxFlex class="margin-left--xs">
+            <input mdInput [(ngModel)]="textInput"
+                   placeholder="">
+        </md-input-container>
+        <div fxLayout="row" fxLayoutAlign="center center" class="margin-horizontal--xs">
+            <button md-icon-button (click)="sendText()">
+                <md-icon>send</md-icon>
+            </button>
+            <button md-mini-fab [color]="isRecording ? 'warn':'primary'" (click)="startRecording()">
+                <md-icon>mic</md-icon>
+            </button>
+        </div>
+    </div>
+</div>
 
-<button *ngIf="isRecording" md-button (click)="stopRecording()">
-    Stop recording
-</button>
 
-<button md-button>
-    Take picture
-</button>
 
-<md-input-container floatPlaceholder="auto">
-    <textarea mdInput [(ngModel)]="textInput" type="text" required
-              placeholder=""></textarea>
-</md-input-container>
 
-<button md-button (click)="sendText()">
-    Send text
-</button>

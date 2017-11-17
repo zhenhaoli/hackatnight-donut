@@ -2,7 +2,6 @@ import {NgModule} from '@angular/core';
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {PipesModule} from "./pipes/pipes.module";
 import {DialogModule} from "./components/dialog/dialog.module";
-import {LineChartCjsModule} from "./components/line-chart-cjs/line-chart-cjs.module";
 import {MainLayoutModule} from "./layouts/main-layout/main-layout.module";
 
 @NgModule({
@@ -12,7 +11,6 @@ import {MainLayoutModule} from "./layouts/main-layout/main-layout.module";
         // own modules
         PipesModule,
         DialogModule,
-        LineChartCjsModule,
         MainLayoutModule
     ],
     exports: [
@@ -21,7 +19,6 @@ import {MainLayoutModule} from "./layouts/main-layout/main-layout.module";
         // Own modules
         PipesModule,
         DialogModule,
-        LineChartCjsModule,
         MainLayoutModule
     ],
     declarations: [],
