@@ -4,10 +4,9 @@ import {
 } from 'aws-sdk/global';
 import * as LexRuntime from 'aws-sdk/clients/lexruntime';
 import * as Rekognition from 'aws-sdk/clients/rekognition';
-import * as S3 from 'aws-sdk/clients/s3';
-import * as Polly from 'aws-sdk/clients/polly';
 import {LexClient} from "../../shared/LexClient";
 import {Message} from "../../shared/types";
+import {DetectFacesRequest} from "aws-sdk/clients/rekognition";
 
 declare const navigator: any;
 declare const MediaRecorder: any;
@@ -26,8 +25,9 @@ export class HomeComponent implements OnInit {
     private video: any; // video html element
     private chunks: any = [];
 
-    // aws lex
+    // aws
     private lexClient: LexClient;
+    private rekognitionClient: Rekognition;
 
     // message history
     public messages: Message[] = [];
@@ -55,7 +55,7 @@ export class HomeComponent implements OnInit {
         );
         const awsConfig = new AWSConfig({region, credentials});
         const lexRuntimeClient = new LexRuntime(awsConfig);
-        const pollyClient = new Polly(awsConfig);
+        this.rekognitionClient = new Rekognition(awsConfig);
 
         this.lexClient = new LexClient({
             botName: "Joshua",
@@ -143,16 +143,33 @@ export class HomeComponent implements OnInit {
     }
 
     public takePicture() {
-        if(this.videoStream) {
-            let canvas: any = document.querySelector('canvas');
+        if (this.videoStream) {
+            let canvas: HTMLCanvasElement = document.querySelector('canvas');
             canvas
                 .getContext("2d")
-                .drawImage(this.video, 0, 0, 300, 300, 0, 0, 300, 300);
-            let img = canvas.toDataURL('image/png');
-            console.log(img);
-            // let image = new Image();
-            // image.src = img;
-            // POST image to AWS rekognition
+                .drawImage(this.video, 0, 0, 450, 450, 0, 0, 450, 450);
+            let base64Image = canvas.toDataURL('image/jpeg').replace(/^data:image\/(png|jpeg|jpg);base64,/, "");
+            let imageBytes = this.getBinary(base64Image);
+            let detectFacesRequest: DetectFacesRequest = {Image: {Bytes: imageBytes}, Attributes: ["ALL"]};
+            this.messages.push({
+                text: '',
+                time: new Date(),
+                sender: 'client',
+                audio: null,
+                imgSrc: canvas.toDataURL('image/jpeg')
+            });
+            this.rekognitionClient.detectFaces(detectFacesRequest, (err, data) => {
+                if(!err){
+                    this.messages.push({
+                        text: '',
+                        time: new Date(),
+                        sender: 'server',
+                        audio: null,
+                        imgSrc: null,
+                        emotions: data.FaceDetails[0].Emotions
+                    });
+                }
+            });
         }
     }
 
@@ -162,6 +179,17 @@ export class HomeComponent implements OnInit {
             this.messages.push(new Message(res.message, 'server', new Date()));
         });
         this.textInput = '';
+    }
+
+    private getBinary(base64Image) {
+        let binaryImg = atob(base64Image);
+        let length = binaryImg.length;
+        let ab = new ArrayBuffer(length);
+        let ua = new Uint8Array(ab);
+        for (let i = 0; i < length; i++) {
+            ua[i] = binaryImg.charCodeAt(i);
+        }
+        return ab;
     }
 
 }

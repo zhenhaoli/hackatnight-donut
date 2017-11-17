@@ -1,17 +1,24 @@
 <div class="home__full-width-height-section home__bg-image-section"
-     style="background-image: url('assets/images/cockpit.jpg');"
+     style="background-image: url('assets/images/cockpit.png');"
      fxLayout="column">
     <div class="full-height" fxLayout="column" fxLayoutAlign="end start">
         <div *ngFor="let message of messages"
              class="home__message-box card margin--xs"
              [fxFlexAlign]="message.sender == 'server' ? 'start' : 'end'">
             <p class="home__message-box__text">
-                {{message.text}} <br>
+                {{message.text}}
+                <ng-container *ngIf="message.emotions && message.emotions.length > 0">
+                    You seem to be
+                    <a *ngFor="let emotion of message.emotions">
+                        {{emotion.Type.toLowerCase()}} 
+                    </a>
+                </ng-container>
             </p>
-            <p class="home__message-box__date">
+            <p class="home__message-box__date" fxLayout="column">
                 <a *ngIf="message.audio" class="cursor-pointer" (click)="message.audio.play()">
                     <md-icon>mic</md-icon>
                 </a>
+                <img *ngIf="message.imgSrc" width="150" [src]="message.imgSrc">
                 {{message.time | date:'shortTime'}}
             </p>
         </div>
@@ -21,7 +28,7 @@
     <div fxLayout="row">
         <md-input-container floatPlaceholder="auto" fxFlex class="margin-left--xs">
             <input mdInput [(ngModel)]="textInput"
-                   placeholder="">
+                   placeholder="" (keyup.enter)="sendText()">
         </md-input-container>
         <div fxLayout="row" fxLayoutAlign="center center" class="margin-horizontal--xs">
             <button md-icon-button (click)="sendText()">
@@ -39,5 +46,5 @@
 
 
 <!-- VIDEO RECORDER -->
-<video style="display:none" width="300" height="300"></video>
-<canvas style="display:none;" width="300" height="300"></canvas>
+<video style="display:none" width="450" height="450"></video>
+<canvas style="display:none;" width="450" height="450"></canvas>

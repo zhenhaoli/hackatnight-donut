@@ -2,6 +2,12 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.2.6.
 
+## Deploy to gh-pages
+
+Build for prod env: `ng build --base-href /hackatnight/ --deploy-url /hackatnight/ --prod`
+
+Push content of `dist` to root(`/`) on `gh-pages` branch.
+
 ## Docker development
 
 Build image with `docker build -f Dockerfile-dev -t webapp-starter-dev .` (be sure local `node_modules` is non-existent).

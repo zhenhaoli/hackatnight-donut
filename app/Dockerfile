@@ -10,4 +10,4 @@ RUN yarn install --pure-lockfile
 COPY . /app
 
 # create dist
-RUN ng build
+RUN ng build --base-href /hackatnight/ --deploy-url /hackatnight/ --prod
