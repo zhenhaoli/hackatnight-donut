@@ -68,25 +68,42 @@ export class HomeComponent implements OnInit {
     private setupAudioRecorder() {
         const onSuccess = (stream) => {
             this.audioStream = new MediaRecorder(stream);
+            this.audioStream.onstart = (e) => {
+                this.chunks = [];
+            };
             this.audioStream.onstop = (e) => {
                 const audio = new Audio();
-                const blob = new Blob(this.chunks, {'type': 'audio/wav; codecs=opus'});
+                const blob = new Blob(this.chunks, {'type': 'audio/x-l16'});
                 this.chunks.length = 0;
+
+                // create array buffer from blob
+                let reader = new FileReader();
+                reader.onload = () => {
+                    let ctx = new AudioContext();
+                    ctx.decodeAudioData(reader.result).then((buffer) => {
+                        this.reSample(buffer, 16000, (newBuffer) => {
+                            let arrayBuffer = this.convertFloat32ToInt16(newBuffer.getChannelData(0));
+                            this.lexClient.postContent(arrayBuffer).then((res) => {
+                                const uInt8Array = new Uint8Array(res.audioStream);
+                                const arrayBuffer = uInt8Array.buffer;
+                                const blob = new Blob([arrayBuffer]);
+                                const url = URL.createObjectURL(blob);
+                                let audioElement = new Audio();
+                                audioElement.src = url;
+                                audioElement.play();
+                                this.messages.push(new Message(res.message, 'server', new Date(), audioElement));
+                                this.cdf.detectChanges();
+                            });
+                        });
+                    });
+                };
+                reader.readAsArrayBuffer(blob);
+
+                // store audio in messages
                 audio.src = window.URL.createObjectURL(blob);
                 audio.load();
                 this.messages.push(new Message('', 'client', new Date(), audio));
                 this.cdf.detectChanges();
-                this.lexClient.postContent(blob).then((res) => {
-                    const uInt8Array = new Uint8Array(res.audioStream);
-                    const arrayBuffer = uInt8Array.buffer;
-                    const blob = new Blob([arrayBuffer]);
-                    const url = URL.createObjectURL(blob);
-                    let audioElement = new Audio();
-                    audioElement.src = url;
-                    audioElement.play();
-                    this.messages.push(new Message(res.message, 'server', new Date(), audioElement));
-                    this.cdf.detectChanges();
-                });
             };
 
             this.audioStream.ondataavailable = (e) => this.chunks.push(e.data);
@@ -159,7 +176,7 @@ export class HomeComponent implements OnInit {
                 imgSrc: canvas.toDataURL('image/jpeg')
             });
             this.rekognitionClient.detectFaces(detectFacesRequest, (err, data) => {
-                if(!err){
+                if (!err) {
                     this.messages.push({
                         text: '',
                         time: new Date(),
@@ -181,6 +198,7 @@ export class HomeComponent implements OnInit {
         this.textInput = '';
     }
 
+    // UTIL
     private getBinary(base64Image) {
         let binaryImg = atob(base64Image);
         let length = binaryImg.length;
@@ -190,6 +208,31 @@ export class HomeComponent implements OnInit {
             ua[i] = binaryImg.charCodeAt(i);
         }
         return ab;
+    }
+
+    private reSample(audioBuffer, targetSampleRate, onComplete) {
+        let channel = audioBuffer.numberOfChannels;
+        let samples = audioBuffer.length * targetSampleRate / audioBuffer.sampleRate;
+
+        let offlineContext = new OfflineAudioContext(channel, samples, targetSampleRate);
+        let bufferSource = offlineContext.createBufferSource();
+        bufferSource.buffer = audioBuffer;
+
+        bufferSource.connect(offlineContext.destination);
+        bufferSource.start(0);
+
+        offlineContext.startRendering().then(function (renderedBuffer) {
+            onComplete(renderedBuffer);
+        })
+    }
+
+    private convertFloat32ToInt16(buffer) {
+        let l = buffer.length;
+        let buf = new Int16Array(l);
+        while (l--) {
+            buf[l] = Math.min(1, buffer[l]) * 0x7FFF;
+        }
+        return buf.buffer;
     }
 
 }

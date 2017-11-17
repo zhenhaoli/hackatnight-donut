@@ -48,27 +48,13 @@ export class LexClient {
 
     postContent(blob,
                 sessionAttributes = {},
-                acceptFormat = 'audio/ogg',
-                offset = 0,) {
-        const mediaType = blob.type;
-        let contentType = mediaType;
-
-        if (mediaType.startsWith('audio/wav')) {
-            contentType = 'audio/x-l16; sample-rate=16000; channel-count=1';
-        } else if (mediaType.startsWith('audio/ogg')) {
-            contentType =
-                'audio/x-cbr-opus-with-preamble; bit-rate=32000;' +
-                ` frame-size-milliseconds=20; preamble-size=${offset}`;
-        } else {
-            console.warn('unknown media type in lex client');
-        }
-
+                acceptFormat = 'audio/ogg') {
         const postContentReq = this.lexRuntimeClient.postContent({
             accept: acceptFormat,
             botAlias: this.botAlias,
             botName: this.botName,
             userId: this.userId,
-            contentType,
+            contentType: 'audio/x-l16; sample-rate=16000; channel-count=1',
             inputStream: blob,
             sessionAttributes,
         });
@@ -77,4 +63,6 @@ export class LexClient {
             .then(creds => creds && this.initCredentials(creds))
             .then(() => postContentReq.promise());
     }
+
+    // HELPER METHODS TO PREPARE AUDIO DATA
 }
