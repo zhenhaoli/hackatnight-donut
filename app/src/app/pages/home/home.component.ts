@@ -3,6 +3,7 @@ import {
     Config as AWSConfig, CognitoIdentityCredentials
 } from 'aws-sdk/global';
 import * as LexRuntime from 'aws-sdk/clients/lexruntime';
+import * as Rekognition from 'aws-sdk/clients/rekognition';
 import * as S3 from 'aws-sdk/clients/s3';
 import * as Polly from 'aws-sdk/clients/polly';
 import {LexClient} from "../../shared/LexClient";
