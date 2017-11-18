@@ -58,7 +58,7 @@ export class HomeComponent implements OnInit {
         this.rekognitionClient = new Rekognition(awsConfig);
 
         this.lexClient = new LexClient({
-            botName: "Joshua",
+            botName: "Donut",
             botAlias: "$LATEST",
             userId: null,
             lexRuntimeClient: lexRuntimeClient
