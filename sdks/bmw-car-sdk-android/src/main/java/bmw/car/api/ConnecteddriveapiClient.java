@@ -20,7 +20,7 @@ import java.util.*;
 import bmw.car.api.model.Empty;
 
 
-@com.amazonaws.mobileconnectors.apigateway.annotation.Service(endpoint = "https://bmw.hackathons.denull")
+@com.amazonaws.mobileconnectors.apigateway.annotation.Service(endpoint = "https://bmw.hackathons.de")
 public interface ConnecteddriveapiClient {
 
 

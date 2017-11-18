@@ -141,7 +141,7 @@ public class BMWConnecteddriveapiClient: AWSAPIGatewayClient {
 	    super.init()
 	
 	    self.configuration = configuration.copy() as! AWSServiceConfiguration
-	    var URLString: String = "https://bmw.hackathons.denull"
+	    var URLString: String = "https://bmw.hackathons.de"
 	    if URLString.hasSuffix("/") {
 	        URLString = URLString.substring(to: URLString.index(before: URLString.endIndex))
 	    }
